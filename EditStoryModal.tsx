@@ -1,10 +1,4 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -27,11 +21,7 @@ interface EditStoryModalProps {
   onSave: (updatedStory: Story) => void;
 }
 
-export default function EditStoryModal({
-  story,
-  onClose,
-  onSave,
-}: EditStoryModalProps) {
+export default function EditStoryModal({ story, onClose, onSave }: EditStoryModalProps) {
   const [editedStory, setEditedStory] = useState<Story>(story);
 
   useEffect(() => {
@@ -45,8 +35,6 @@ export default function EditStoryModal({
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="bg-gray-900 text-white max-w-3xl w-full max-h-[90vh] flex flex-col rounded-lg p-0">
-        
-        {/* Sticky Header */}
         <DialogHeader className="sticky top-0 bg-gray-900 z-10 border-b border-gray-700 px-6 py-4">
           <DialogTitle>Edit User Story</DialogTitle>
           <button
@@ -56,10 +44,7 @@ export default function EditStoryModal({
             ✕
           </button>
         </DialogHeader>
-
-        {/* Scrollable Middle Section */}
         <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
-          {/* Read-only USID */}
           <div>
             <label className="text-sm text-gray-400 block mb-1">User Story ID</label>
             <input
@@ -69,8 +54,6 @@ export default function EditStoryModal({
               className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-gray-400 cursor-not-allowed"
             />
           </div>
-
-          {/* Read-only Confidence */}
           {editedStory.confidence !== undefined && (
             <div>
               <label className="text-sm text-gray-400 block mb-1">Confidence Score</label>
@@ -82,8 +65,6 @@ export default function EditStoryModal({
               />
             </div>
           )}
-
-          {/* Editable Title */}
           <div>
             <label className="text-sm text-gray-400 block mb-1">Title</label>
             <input
@@ -94,8 +75,7 @@ export default function EditStoryModal({
               className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
-          {/* Editable Story */}
+         
           <div>
             <label className="text-sm text-gray-400 block mb-1">User Story</label>
             <textarea
@@ -114,32 +94,24 @@ export default function EditStoryModal({
               className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-white h-24 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
-          {/* Editable Acceptance Criteria */}
           <div>
             <label className="text-sm text-gray-400 block mb-1">Acceptance Criteria</label>
             <textarea
               value={editedStory.acceptanceCriteria.join("\n")}
-              onChange={(e) =>
-                handleChange("acceptanceCriteria", e.target.value.split("\n"))
-              }
+              onChange={(e) => handleChange("acceptanceCriteria", e.target.value.split("\n"))}
               placeholder="Acceptance Criteria (one per line)"
               className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-white h-32 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          {/* Editable Tags */}
           <div>
             <label className="text-sm text-gray-400 block mb-1">Labels/Tags</label>
             <textarea
               value={editedStory.tags.join("\n")}
-              onChange={(e) =>
-                handleChange("tags", e.target.value.split("\n"))
-              }
+              onChange={(e) => handleChange("tags", e.target.value.split("\n"))}
               placeholder="Tags (one per line)"
               className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-white h-32 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-          {/* Editable Priority */}
           <div>
             <label className="text-sm text-gray-400 block mb-1">Priority</label>
             <input
@@ -150,8 +122,6 @@ export default function EditStoryModal({
               className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
-          {/* Editable T-Shirt Size */}
           <div>
             <label className="text-sm text-gray-400 block mb-1">T-Shirt Size</label>
             <input
@@ -162,8 +132,6 @@ export default function EditStoryModal({
               className="w-full rounded-md border border-gray-700 bg-gray-800 p-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
-
-          {/* Editable Role */}
           <div>
             <label className="text-sm text-gray-400 block mb-1">Role</label>
             <input
@@ -175,13 +143,9 @@ export default function EditStoryModal({
             />
           </div>
         </div>
-
-        {/* Fixed Footer */}
         <DialogFooter className="bg-gray-900 border-t border-gray-700 px-6 py-4">
           <Button onClick={() => onSave(editedStory)}>Save</Button>
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
+          <Button variant="ghost" onClick={onClose}>Cancel</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
