@@ -1,116 +1,5 @@
-// import {
-//   Dialog,
-//   DialogContent,
-//   DialogHeader,
-//   DialogTitle,
-//   DialogDescription,
-// } from "@/components/ui/dialog";
-// import { useState } from "react";
-// import { Send, Mic } from "lucide-react";
-
-// interface FeedbackModalProps {
-//   story: {
-//     role: string;
-//     story: string;
-//     tshirt_size: string;
-//     acceptanceCriteria: string[];
-//     [key: string]: any;
-//   };
-//   onClose: () => void;
-//   onUpdate: (updatedStory: any) => void;
-// }
-
-// export default function FeedbackModal({
-//   story,
-//   onClose,
-//   onUpdate,
-// }: FeedbackModalProps) {
-//   const [feedback, setFeedback] = useState("");
-//   const [loading, setLoading] = useState(false);
-//   const [sendClicked, setSendClicked] = useState(false);
-
-//   const handleSubmit = async () => {
-//     if (!feedback.trim()) return;
-//     setLoading(true);
-//     setSendClicked(true);
-
-//     try {
-//       const res = await fetch("http://127.0.0.1:8000/update-story", {
-//         method: "POST",
-//         headers: { "Content-Type": "application/json" },
-//         body: JSON.stringify({ story, feedback }),
-//       });
-
-//       const updated = await res.json();
-//       onUpdate(updated);
-//       setFeedback("");
-//     } catch (err) {
-//       console.error("LLM update failed:", err);
-//     } finally {
-//       setLoading(false);
-//       setTimeout(() => setSendClicked(false), 300);
-//     }
-//   };
-
-//   return (
-//     <Dialog open onOpenChange={onClose}>
-//       <DialogContent className="bg-black text-white">
-//         <DialogHeader>
-//           <DialogTitle className="text-white">Suggest Improvements</DialogTitle>
-//           <DialogDescription className="text-gray-400">
-//             Share feedback to refine the story using AI.
-//           </DialogDescription>
-//         </DialogHeader>
-
-//         {/* Input with embedded icons */}
-//         <div className="relative mt-2">
-//         <input
-//             type="text"
-//             placeholder="Type your feedback..."
-//             value={feedback}
-//             onChange={(e) => setFeedback(e.target.value)}
-//             className="w-full pr-20 pl-4 py-2 rounded-md border border-gray-700 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
-//             aria-label="Feedback input"
-//         />
-
-//         {/* Mic Button - now first */}
-//         <button
-//             onClick={() => console.log("Voice input not implemented yet")}
-//             className="absolute right-10 top-1/2 -translate-y-1/2 p-2 rounded-full bg-gray-700 text-white transition duration-200 ease-in-out hover:scale-105 hover:shadow-md"
-//             aria-label="Voice input"
-//             title="Voice input"
-//         >
-//             <Mic className="w-4 h-4" />
-//         </button>
-
-//         {/* Send Button - now second */}
-//         <button
-//             onClick={handleSubmit}
-//             disabled={loading || !feedback.trim()}
-//             className={`absolute right-2 top-1/2 -translate-y-1/2 p-2 rounded-full bg-purple-600 text-white transition duration-200 ease-in-out
-//             ${!loading && "hover:scale-105 hover:shadow-md"} 
-//             ${sendClicked ? "animate-ping" : ""}
-//             `}
-//             aria-label="Send feedback"
-//             title="Send"
-//         >
-//             <Send className="w-4 h-4" />
-//         </button>
-//         </div>
-//       </DialogContent>
-//     </Dialog>
-//   );
-// }
-
-//----------v2----
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { useState , useRef} from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { useState, useRef } from "react";
 import { Send, Mic } from "lucide-react";
 
 interface FeedbackModalProps {
@@ -122,7 +11,7 @@ interface FeedbackModalProps {
     description: string;
     tshirt_size: string;
     priority: string;
-    tags: string [];
+    tags: string[];
     acceptanceCriteria: string[];
     [key: string]: any;
   };
@@ -130,17 +19,12 @@ interface FeedbackModalProps {
   onUpdate: (updatedStory: any) => void;
 }
 
-export default function FeedbackModal({
-  story,
-  onClose,
-  onUpdate,
-}: FeedbackModalProps) {
+export default function FeedbackModal({ story, onClose, onUpdate }: FeedbackModalProps) {
   const [feedback, setFeedback] = useState("");
   const [loading, setLoading] = useState(false);
   const [sendClicked, setSendClicked] = useState(false);
   const [updatedStory, setUpdatedStory] = useState<any>(null);
   const [listening, setListening] = useState(false);
-  // const [isRecording, setIsRecording] = useState(false);  
   const recognitionRef = useRef<any>(null);
   const timeroutRef = useRef<any>(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -175,173 +59,55 @@ export default function FeedbackModal({
     onClose();
   };
 
-//   const handleVoiceInput = () => {
-//     const SpeechRecognition =
-//       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+  const handleVoiceInput = () => {
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
-//     if (!SpeechRecognition) {
-//       alert("Speech recognition not supported in this browser.");
-//       return;
-//     }
-
-//     const recognition = new SpeechRecognition();
-//     recognition.lang = "en-US";
-//     recognition.interimResults = false;
-//     recognition.maxAlternatives = 1;
-
-//     recognition.onstart = () => setListening(true);
-//     recognition.onend = () => setListening(false);
-
-//     recognition.onresult = (event: any): void => {
-//       const transcript = event.results[0][0].transcript;
-//       setFeedback((prev) => prev + " " + transcript);
-//     };
-
-//     recognition.onerror = (event: any): void => {
-//       console.error("Speech recognition error:", event.error);
-//       setListening(false);
-//     };
-
-//     recognition.start();
-//   };
-// const handleVoiceInput = () =>{
-//   const SpeechRecognition =
-//     (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-//   if (!SpeechRecognition) {
-//     alert("Speech recognition not supported in this browser.");
-//     return;
-//   }
-
-//   const recognition = new SpeechRecognition();
-//   recognition.lang = "en-US";
-//   recognition.interimResults = true;
-//   recognition.continuous = false;
-
-//   recognition.onstart = () => setListening(true);
-//   recognition.onend = () => setListening(false);
-
-//   recognition.onresult = (event: any) => {
-//     let interimTranscript = "";
-//     let finalTranscript = "";
-
-//     for (let i = event.resultIndex; i < event.results.length; ++i) {
-//       const transcript = event.results[i][0].transcript;
-//       if (event.results[i].isFinal) {
-//         finalTranscript += transcript;
-//       } else {
-//         interimTranscript += transcript;
-//       }
-//     }
-
-//     // Update feedback with final + interim results
-//     if (finalTranscript) {
-//       setFeedback((prev) => prev + finalTranscript);
-//     }
-    
-//     // For interim results, replace any previous interim text
-//     if (interimTranscript) {
-//       setFeedback((prev) => {
-//         // Remove any previous interim text (after the last period for better context)
-//         const lastPeriodIndex = prev.lastIndexOf('.');
-//         const baseText = lastPeriodIndex >= 0 ? prev.substring(0, lastPeriodIndex + 1) : prev;
-//         return baseText + ' ' + interimTranscript;
-//       });
-//     }
-//   };
-
-//   recognition.onerror = (event: any) => {
-//     console.error("Speech recognition error:", event.error);
-//     setListening(false);
-//   };
-
-//   recognition.start();
-// };
-
-// const handleVoiceInput = () => {
-//   const SpeechRecognition =
-//     (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-//   if (!SpeechRecognition) {
-//     alert("Speech recognition not supported in this browser.");
-//     return;
-//   }
-
-//   const recognition = new SpeechRecognition();
-//   recognition.lang = "en-US";        // adjust to your accent/locale
-//   recognition.interimResults = false; // final results only
-//   recognition.continuous = true;      // keep listening until stopped
-
-//   recognition.onstart = () => setListening(true);
-//   recognition.onend = () => setListening(false);
-
-//   recognition.onresult = (event: any) => {
-//     let transcript = "";
-//     for (let i = event.resultIndex; i < event.results.length; ++i) {
-//       transcript += event.results[i][0].transcript;
-//     }
-
-//     setFeedback((prev) => (prev ? prev + " " + transcript : transcript));
-//   };
-
-//   recognition.onerror = (event: any) => {
-//     console.error("Speech recognition error:", event.error);
-//     setListening(false);
-//   };
-
-//   recognition.start();
-// };
-
-const handleVoiceInput = () => {
-  const SpeechRecognition =
-    (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-
-  if (!SpeechRecognition) {
-    alert("Speech recognition not supported in this browser.");
-    return;
-  }
-
-  // Toggle recording
-  if (recognitionRef.current && listening) {
-    recognitionRef.current.stop(); // stop recognition
-    return;
-  }
-
-  const recognition = new SpeechRecognition();
-  recognition.lang = "en-US";        
-  recognition.interimResults = false;
-  recognition.continuous = true;
-
-  recognition.onstart = () => setListening(true);
-  recognition.onend = () => {
-    setListening(false);
-    recognitionRef.current = null;
-    if (timeroutRef.current) {
-      clearTimeout(timeroutRef.current);
-    }
-  };
-
-  recognition.onresult = (event: any) => {
-    let transcript = "";
-    for (let i = event.resultIndex; i < event.results.length; ++i) {
-      transcript += event.results[i][0].transcript;
+    if (!SpeechRecognition) {
+      alert("Speech recognition not supported in this browser.");
+      return;
     }
 
-    setFeedback((prev) => (prev ? prev + " " + transcript : transcript));
-      if(timeroutRef.current){
-    clearTimeout(timeroutRef.current);
-  }
-  timeroutRef.current = setTimeout(() => { recognition.stop()},2000)
-  };
+    if (recognitionRef.current && listening) {
+      recognitionRef.current.stop();
+      return;
+    }
 
-  recognition.onerror = (event: any) => {
-    console.error("Speech recognition error:", event.error);
-    setListening(false);
-  };
+    const recognition = new SpeechRecognition();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.continuous = true;
 
-  recognition.start();
-  recognitionRef.current = recognition;
-};
+    recognition.onstart = () => setListening(true);
+    recognition.onend = () => {
+      setListening(false);
+      recognitionRef.current = null;
+      if (timeroutRef.current) {
+        clearTimeout(timeroutRef.current);
+      }
+    };
+
+    recognition.onresult = (event: any) => {
+      let transcript = "";
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        transcript += event.results[i][0].transcript;
+      }
+
+      setFeedback((prev) => (prev ? prev + " " + transcript : transcript));
+      if (timeroutRef.current) {
+        clearTimeout(timeroutRef.current);
+      }
+      timeroutRef.current = setTimeout(() => { recognition.stop(); }, 2000);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error:", event.error);
+      setListening(false);
+    };
+
+    recognition.start();
+    recognitionRef.current = recognition;
+  };
 
   return (
     <Dialog open onOpenChange={onClose}>
@@ -353,7 +119,6 @@ const handleVoiceInput = () => {
           </DialogDescription>
         </DialogHeader>
 
-        {/* Input with embedded icons */}
         <div className="relative mt-2">
           <input
             type="text"
@@ -363,8 +128,6 @@ const handleVoiceInput = () => {
             className="w-full pr-20 pl-4 py-2 rounded-md border border-gray-700 bg-gray-900 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
             aria-label="Feedback input"
           />
-
-          {/* Mic Button */}
           <button
             onClick={handleVoiceInput}
             className={`absolute right-10 top-1/2 -translate-y-1/2 p-2 rounded-full ${
@@ -375,8 +138,6 @@ const handleVoiceInput = () => {
           >
             <Mic className="w-4 h-4" />
           </button>
-
-          {/* Send Button */}
           <button
             onClick={handleSubmit}
             disabled={loading || !feedback.trim()}
@@ -391,7 +152,6 @@ const handleVoiceInput = () => {
           </button>
         </div>
 
-        {/* Updated Story Preview or Edit Mode */}
         {updatedStory && (
           <div className="mt-6 p-4 border border-gray-700 rounded-md bg-gray-900 text-sm space-y-3 max-h-[60vh] overflow-y-auto">
             {isEditing ? (
@@ -426,6 +186,7 @@ const handleVoiceInput = () => {
                     className="w-full mt-1 bg-gray-800 text-white p-2 rounded-md border border-gray-700"
                   />
                 </div>
+               
                 <div>
                   <span className="text-gray-400">Story:</span>
                   <textarea
@@ -437,10 +198,10 @@ const handleVoiceInput = () => {
                     rows={3}
                   />
                 </div>
-                <div>
+                 <div>
                   <span className="text-gray-400">Description:</span>
                   <textarea
-                    value={editableStory.story}
+                    value={editableStory.description}
                     onChange={(e) =>
                       setEditableStory({ ...editableStory, description: e.target.value })
                     }
@@ -463,7 +224,7 @@ const handleVoiceInput = () => {
                   <input
                     value={editableStory.priority}
                     onChange={(e) =>
-                      setEditableStory({ ...editableStory, role: e.target.value })
+                      setEditableStory({ ...editableStory, priority: e.target.value })
                     }
                     className="w-full mt-1 bg-gray-800 text-white p-2 rounded-md border border-gray-700"
                   />
@@ -528,6 +289,7 @@ const handleVoiceInput = () => {
                   <span className="text-gray-400">Role:</span>{" "}
                   <span className="text-white">{updatedStory.role}</span>
                 </div>
+              
                 <div>
                   <span className="text-gray-400">Story:</span>{" "}
                   <span className="text-white">{updatedStory.story}</span>
@@ -582,5 +344,3 @@ const handleVoiceInput = () => {
     </Dialog>
   );
 }
-//-----------------------------------
-

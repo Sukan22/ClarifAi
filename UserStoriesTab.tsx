@@ -1,119 +1,30 @@
-import { useEffect,  useState } from "react";
-// import {
-//   Card,
-//   CardContent,
-// } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronDown, ChevronUp, CircleCheck, CirclePlus, RotateCcw, ThumbsUp, Eye, User2Icon, Pencil} from "lucide-react";
+import { ChevronDown, ChevronUp, CircleCheck, CirclePlus, RotateCcw, Eye, User2Icon, Pencil } from "lucide-react";
 import { Sparkles } from "lucide-react";
-import FeedbackModal from "@/components/clarifai/FeedbackModal"
+import FeedbackModal from "@/components/clarifai/FeedbackModal";
 import EditStoryModal from "@/components/clarifai/EditStoryModal";
-
-// import {
-//   Command,
-//   CommandEmpty,
-//   CommandGroup,
-//   CommandItem,
-// } from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-//import { UserStoriesIcon } from "../icons/appIcons";
-
-import {
-  Dialog,
-  DialogTrigger,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogClose,
-} from "@/components/ui/dialog";
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
 import { ConfidenceBadge } from "./ConfidenceBadge";
 import { Badge } from "../ui/badge";
-//import { userStoriesData } from './userStoriesData';
 
-
-
-// const mockData = [
-//   {
-//     id: "001",
-//     confidence: 1.0,
-//     status: "Valid",
-//     stories: [
-//       {
-//         role: "Card Operator",
-//         story:
-//           "I want to register school details (name location service etc), so that I can maintain accurate database in school records.",
-//         acceptanceCriteria: [
-//           "Loyalty points are not awarded for school fee",
-//           "The system correctly identifies EPP transactions.",
-//           "The system prevents loyalty point accrual transactions",
-//         ],
-//       },
-//       {
-//         role: "Contact Center Agent",
-//         story:
-//           "I want to register school details (name location service etc), so that I can maintain accurate database in school records.",
-//         acceptanceCriteria: [
-//           "Only authorized users can edit records.",
-//           "Data must be validated before save.",
-//           "Changes must be logged in audit trail.",
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     id: "002",
-//     confidence: 0.02,
-//     status: "Invalid",
-//     stories: [
-//       {
-//         role: "Card Operator",
-//         story:
-//           "I want to add fee details for each student for proper accounting.",
-//         acceptanceCriteria: [
-//           "Each student has a unique fee record.",
-//           "Fee records are time-stamped.",
-//           "System prevents duplicate entries.",
-//         ],
-//       },
-//     ],
-//   },
-//   {
-//     id: "003",
-//     confidence: 0.52,
-//     status: "Invalid",
-//     stories: [
-//       {
-//         role: "Card Operator",
-//         story:
-//           "I want to add fee details for each student for proper accounting.",
-//         acceptanceCriteria: [
-//           "Fee details sync with accounting software.",
-//           "Changes notify relevant departments.",
-//         ],
-//       },
-//     ],
-//   },
-// ];
 type Requirement = {
   requirement_id: string;
   user_story_id: string;
   title: string;
-  user_story:string;
+  user_story: string;
   description: string;
-  acceptance_criteria:string[]
+  acceptance_criteria: string[];
   confidence_score: number;
-  tshirt_size:string;
+  tshirt_size: string;
   priority: string;
   tags: string[];
 };
+
 type FormattedRequirement = {
   id: string;
   confidence: number;
@@ -124,23 +35,22 @@ type FormattedRequirement = {
     story: string;
     description: string;
     acceptanceCriteria: string[];
-    tshirt_size:string;
+    tshirt_size: string;
     priority: string;
     tags: string[];
   }[];
 };
 
-interface UserStoriesProps{
-  goTogerkin:(gerkinData:any[])=>void;
-  userstoriesData:Requirement[];
-  fulluserstoriesdataPayload:{user_stories:Requirement[]};
-  fullValidatorPayload:()=>void;
-  onUpdatedUserStoriesData?: (data: Requirement[]) => void; 
+interface UserStoriesProps {
+  goTogerkin: (gerkinData: any[]) => void;
+  userstoriesData: Requirement[];
+  fulluserstoriesdataPayload: { user_stories: Requirement[] };
+  fullValidatorPayload: () => void;
+  onUpdatedUserStoriesData?: (data: Requirement[]) => void;
 }
-export default function UserStoriesTab({ goTogerkin,userstoriesData,fulluserstoriesdataPayload,fullValidatorPayload, onUpdatedUserStoriesData }:UserStoriesProps) {
 
+export default function UserStoriesTab({ goTogerkin, userstoriesData, fulluserstoriesdataPayload, fullValidatorPayload, onUpdatedUserStoriesData }: UserStoriesProps) {
   const [showEdit, setShowEdit] = useState(false);
-
   const [showFeedback, setShowFeedback] = useState(false);
   const [confidenceThreshold, setConfidenceThreshold] = useState(0);
   const [roleFilter, setRoleFilter] = useState<string[]>([]);
@@ -148,25 +58,24 @@ export default function UserStoriesTab({ goTogerkin,userstoriesData,fulluserstor
   const [searchText, setSearchText] = useState("");
   const [expandAll, setExpandAll] = useState(false);
   const [expandedReqs, setExpandedReqs] = useState<Record<string, boolean>>({});
-  const[tagFilter, setTagFilter] = useState<string[]>([]);
-const [selectedStory, setSelectedStory] = useState<null | {
-  usid: string;
-  title: string;
-  role: string;
-  story: string;
-  description: string;
-  acceptanceCriteria: string[];
-  tshirt_size:string;
-  priority: string;
-  tags: string[];
-}>(null);
+  const [tagFilter, setTagFilter] = useState<string[]>([]);
+  const [selectedStory, setSelectedStory] = useState<null | {
+    usid: string;
+    title: string;
+    role: string;
+    story: string;
+    description: string;
+    acceptanceCriteria: string[];
+    tshirt_size: string;
+    priority: string;
+    tags: string[];
+  }>(null);
 
-useEffect(() => {
+  useEffect(() => {
     const extractRoleFromStory = (story: string): string => {
       const match = story.match(/As (a|an|the) ([^,]*)/i);
       return match ? match[2].trim() : "Unknown";
     };
-
     setShowMessage(true);
     setTimeout(() => {
       setShowMessage(false);
@@ -192,47 +101,50 @@ useEffect(() => {
 
     setRequirements(formattedData);
   }, [userstoriesData]);
-const [isRegenerating, setIsRegenerating] = useState(false);
 
-const [requirements, setRequirements] = useState<FormattedRequirement[]>([]);
-const uniqueRoles = Array.from(
-  new Set(
-    requirements.flatMap((item) =>
-      item.stories.map((story) => story.role)
-    )
-  )
-);
+  const [isRegenerating, setIsRegenerating] = useState(false);
+  const [requirements, setRequirements] = useState<FormattedRequirement[]>([]);
+  const [showMessage, setShowMessage] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [showPosthingSuccess, setShowPostingSuccess] = useState(false);
+  const [isPosting, setIsPosting] = useState(false);
 
-const uniqueTags: string[] = Array.from(
-  new Set(
-    requirements.flatMap((item) =>
-      item.stories.flatMap((story) => story.tags) 
+  const uniqueRoles = Array.from(
+    new Set(
+      requirements.flatMap((item) =>
+        item.stories.map((story) => story.role)
+      )
     )
-  )
-);
+  );
+
+  const uniqueTags: string[] = Array.from(
+    new Set(
+      requirements.flatMap((item) =>
+        item.stories.flatMap((story) => story.tags)
+      )
+    )
+  );
 
   const filteredRequirements = requirements.filter((req) => {
-  const meetsConfidence = req.confidence >= confidenceThreshold;
-  const meetRoles =
-    roleFilter.length === 0 ||
-    req.stories.some((s) => roleFilter.includes(s.role));
-  const meetsId =
-    selectedIds.length === 0 || selectedIds.includes(req.id);
-  const meetsSearch =
-    searchText.trim() === "" ||
-    req.id.toLowerCase().includes(searchText.toLowerCase()) ||
-    req.stories.some((s) =>
-      s.story.toLowerCase().includes(searchText.toLowerCase())
-    );
+    const meetsConfidence = req.confidence >= confidenceThreshold;
+    const meetsRoles =
+      roleFilter.length === 0 ||
+      req.stories.some((s) => roleFilter.includes(s.role));
+    const meetsId =
+      selectedIds.length === 0 || selectedIds.includes(req.id);
+    const meetsSearch =
+      searchText.trim() === "" ||
+      req.id.toLowerCase().includes(searchText.toLowerCase()) ||
+      req.stories.some((s) =>
+        s.story.toLowerCase().includes(searchText.toLowerCase())
+      );
     const meetsTags =
       tagFilter.length === 0 ||
       req.stories.some((s) => s.tags.some((tag) => tagFilter.includes(tag)));
 
-  return meetsConfidence && meetRoles && meetsId && meetsSearch && meetsTags;
-});
+    return meetsConfidence && meetsRoles && meetsId && meetsSearch && meetsTags;
+  });
 
-
-  // PAGINATION
   const [currentPage, setCurrentPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const totalPages = Math.ceil(filteredRequirements.length / rowsPerPage);
@@ -240,7 +152,6 @@ const uniqueTags: string[] = Array.from(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   );
-const [showMessage, setShowMessage] = useState(false);
 
   const clearAllFilters = () => {
     setRoleFilter([]);
@@ -264,128 +175,112 @@ const [showMessage, setShowMessage] = useState(false);
       [id]: !prev[id],
     }));
   };
-const storieslength = requirements.length;
-const [isLoading, setisLoading] = useState(false);
-const [showPosthingSuccess, setShowPostingSuccess] = useState(false);
-// const extractRoleFromStory = (story: string): string => {
-//   const match = story.match(/As a ([^,]*)/i);
-//   return match ? match[1].trim() : "Unknown";
-// };
-const handlegherkin = async () => {
-  if(!fulluserstoriesdataPayload) return;
-  setisLoading(true);
-  
-  try {
-    const response = await fetch("http://127.0.0.1:8000/gherkin",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-      },
-      body: JSON.stringify(fulluserstoriesdataPayload),
-    });
-    if(!response.ok) throw new Error("Validation failed");
-    const gerkinData = await response.json();
-    goTogerkin(gerkinData);
-  }catch (err){
-    console.error("Validation error:", err);
-  }{
-    setisLoading(false)
-  }
-};
 
-const handleRegenerate = async () => {
-  if (!fullValidatorPayload) return;
-  setIsRegenerating(true);
-  try {
-    const response = await fetch("http://127.0.0.1:8000/user_stories", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(fullValidatorPayload),
-    });
-    if (!response.ok) throw new Error("Validation failed");
+  const storieslength = requirements.length;
 
-    const data = await response.json();
-    const regenerateData: Requirement[] = data.user_stories;
+  const handlegherkin = async () => {
+    if (!fulluserstoriesdataPayload) return;
+    setIsLoading(true);
+    try {
+      const response = await fetch("http://127.0.0.1:8000/gherkin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(fulluserstoriesdataPayload),
+      });
+      if (!response.ok) throw new Error("Validation failed");
+      const gerkinData = await response.json();
+      goTogerkin(gerkinData);
+    } catch (err) {
+      console.error("Validation error:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    // Transform and set it like in your useEffect
-    const extractRoleFromStory = (story: string): string => {
-      const match = story.match(/As (a|an|the) ([^,]*)/i);
-      return match ? match[2].trim() : "Unknown";
-    };
+  const handleRegenerate = async () => {
+    if (!fullValidatorPayload) return;
+    setIsRegenerating(true);
+    try {
+      const response = await fetch("http://127.0.0.1:8000/user_stories", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(fullValidatorPayload),
+      });
+      if (!response.ok) throw new Error("Validation failed");
 
-    const formattedData: FormattedRequirement[] = regenerateData.map((storyObj) => ({
-      id: storyObj.requirement_id,
-      confidence: storyObj.confidence_score,
-      stories: [
-        {
-          usid: storyObj.user_story_id,
-          title: storyObj.title,
-          role: extractRoleFromStory(storyObj.user_story),
-          story: storyObj.user_story,
-          description: storyObj.description,
-          acceptanceCriteria: storyObj.acceptance_criteria,
-          tshirt_size: storyObj.tshirt_size,
-          priority: storyObj.priority,
-          tags: storyObj.tags
-        }
-      ],
-    }));
+      const data = await response.json();
+      const regenerateData: Requirement[] = data.user_stories;
 
-    // Set new regenerated data to UI
-    setRequirements(formattedData);
-    setShowMessage(true)
-    setTimeout(() => {
-  setShowMessage(false);
-}, 3000);
-    // Optional: reset filters
-    setSelectedIds([]);
-    setSearchText("");
-    setConfidenceThreshold(0);
-    setRoleFilter([]);
-    setTagFilter([]);
-    setExpandAll(false);
-  } catch (err) {
-    console.error("Regenerate error:", err);
-  } finally {
-    setIsRegenerating(false);
-  }
-};
-const [isPosting,setIsPosting] = useState(false);
-const handlePost = async () => {
-  if(!fulluserstoriesdataPayload) return;
-  setIsPosting(true);
-  try {
-    const response = await fetch("http://127.0.0.1:8000/jira/user_stories",{
-      method:"POST",
-      headers:{
-        "Content-Type":"application/json",
-      },
-      body: JSON.stringify(fulluserstoriesdataPayload),
-    });
-    if(!response.ok) throw new Error("Validation failed");
-        console.log("handlepost in usecase success");
+      const extractRoleFromStory = (story: string): string => {
+        const match = story.match(/As (a|an|the) ([^,]*)/i);
+        return match ? match[2].trim() : "Unknown";
+      };
 
-    const Data = await response.json();
-    
-  }catch (err){
-    console.error("Validation error:", err);
-  } finally{
-    setIsPosting(false);
+      const formattedData: FormattedRequirement[] = regenerateData.map((storyObj) => ({
+        id: storyObj.requirement_id,
+        confidence: storyObj.confidence_score,
+        stories: [
+          {
+            usid: storyObj.user_story_id,
+            title: storyObj.title,
+            role: extractRoleFromStory(storyObj.user_story),
+            story: storyObj.user_story,
+            description: storyObj.description,
+            acceptanceCriteria: storyObj.acceptance_criteria,
+            tshirt_size: storyObj.tshirt_size,
+            priority: storyObj.priority,
+            tags: storyObj.tags,
+          },
+        ],
+      }));
+
+      setRequirements(formattedData);
+      setShowMessage(true);
+      setTimeout(() => {
+        setShowMessage(false);
+      }, 3000);
+      setSelectedIds([]);
+      setSearchText("");
+      setConfidenceThreshold(0);
+      setRoleFilter([]);
+      setTagFilter([]);
+      setExpandAll(false);
+    } catch (err) {
+      console.error("Regenerate error:", err);
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
+  const handlePost = async () => {
+    if (!fulluserstoriesdataPayload) return;
+    setIsPosting(true);
+    try {
+      const response = await fetch("http://127.0.0.1:8000/jira/user_stories", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(fulluserstoriesdataPayload),
+      });
+      if (!response.ok) throw new Error("Validation failed");
+      console.log("handlepost in usecase success");
+      const data = await response.json();
+    } catch (err) {
+      console.error("Validation error:", err);
+    } finally {
+      setIsPosting(false);
       setShowPostingSuccess(true);
-      const timer = setTimeout(() => {
-    setShowPostingSuccess(false);
-  }, 5000);
-  }
-  // {
-  //   setIsRegenerating(false);
-  //   setShowSuccess(true);
-  //     const timer = setTimeout(() => {
-  //   setShowSuccess(false);
-  // }, 5000);
-  // }
-};
+      setTimeout(() => {
+        setShowPostingSuccess(false);
+      }, 5000);
+    }
+  };
+
   useEffect(() => {
     const newStates: Record<string, boolean> = {};
     requirements.forEach((r) => {
@@ -394,21 +289,17 @@ const handlePost = async () => {
     setExpandedReqs(newStates);
   }, [expandAll, requirements]);
 
-  return (
-    <>
-        <div className=" bg-[#f6f6f6] dark:bg-[#181818] rounded-2xl text-black dark:text-white h-[63vh] overflow-hidden flex flex-col">
 
-    <div className="px-3 py-3 flex items-center gap-2 border-b border-gray-700">
-      {/* <div className="shrink-0">
-        <UserStoriesIcon className=" text-black dark:text-white" />
-    
-      </div> */}
-      <div>
-        <h1 className="text-[16px] font-semibold">User Stories List</h1>
-        <p className="text-[12px] text-gray-400">Generated {storieslength} User Stories Requirements</p>
+return (
+  <>
+    <div className="bg-[#f6f6f6] dark:bg-[#181818] rounded-2xl text-black dark:text-white h-[75vh] overflow-hidden flex flex-col">
+      <div className="px-3 py-3 flex items-center gap-2 border-b border-gray-700">
+        <div>
+          <h1 className="text-[16px] font-semibold">User Stories List</h1>
+          <p className="text-[12px] text-gray-400">Generated {storieslength} User Stories Requirements</p>
+        </div>
       </div>
-    </div>
-    
+
       {/* FILTER BAR */}
       <div className="flex gap-4 p-6 items-center">
         <Input
@@ -420,33 +311,32 @@ const handlePost = async () => {
 
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" className="border border-dashed ">
-              <CirclePlus className="w-4 h-4"  />
+            <Button variant="ghost" className="border border-dashed">
+              <CirclePlus className="w-4 h-4" />
               User as a:
-          
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-55 p-2 bg-gray-900 border-gray-700 text-white">
-        <ScrollArea className="h-30 w-full pr-2">
-      <div className="flex flex-col gap-2">
-        {uniqueRoles.map((role) => (
-          <label key={role} className="flex items-center gap-2 text-sm">
-            <Checkbox
-              checked={roleFilter.includes(role)}
-              onCheckedChange={() =>
-                setRoleFilter((prev) =>
-                  prev.includes(role)
-                    ? prev.filter((item) => item !== role)
-                    : [...prev, role]
-                )
-              }
-            />
-            <span className="text-white font-medium">{role}</span>
-          </label>
-        ))}
-      </div>
-      <ScrollBar orientation="vertical" />
-    </ScrollArea>
+            <ScrollArea className="h-30 w-full pr-2">
+              <div className="flex flex-col gap-2">
+                {uniqueRoles.map((role) => (
+                  <label key={role} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={roleFilter.includes(role)}
+                      onCheckedChange={() =>
+                        setRoleFilter((prev) =>
+                          prev.includes(role)
+                            ? prev.filter((item) => item !== role)
+                            : [...prev, role]
+                        )
+                      }
+                    />
+                    <span className="text-white font-medium">{role}</span>
+                  </label>
+                ))}
+              </div>
+              <ScrollBar orientation="vertical" />
+            </ScrollArea>
           </PopoverContent>
         </Popover>
 
@@ -470,7 +360,7 @@ const handlePost = async () => {
                       checked={selectedIds.includes(req.id)}
                       onCheckedChange={() => toggleId(req.id)}
                     />
-                    <span className="text-white ">{req.id}</span>
+                    <span className="text-white">{req.id}</span>
                   </label>
                 ))}
               </div>
@@ -525,356 +415,416 @@ const handlePost = async () => {
           </div>
         </div>
 
-           <Button
-            variant="ghost"
-            onClick={clearAllFilters}
-            className="ml-auto text-sm text-black dark:text-white border  border-dashed px-3 py-2  "
-          ><span><RotateCcw /></span>
-            Clear Filters
-          </Button>
+        <Button
+          variant="ghost"
+          onClick={clearAllFilters}
+          className="ml-auto text-sm text-black dark:text-white border border-dashed px-3 py-2"
+        >
+          <span><RotateCcw /></span>
+          Clear Filters
+        </Button>
 
-            <Popover>
-            <PopoverTrigger asChild>
-              <Button variant="ghost" className="border border-dashed">
-                <CirclePlus className="w-4 h-4" />
-                Tags
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2 bg-gray-900 border-gray-700 text-white overflow-hidden">
-              <ScrollArea className="h-60 w-full">
-                <div className="flex flex-col gap-2 p-2">
-                  {uniqueTags.map((tag) => (
-                    <label key={tag} className="flex items-center gap-2 text-sm">
-                      <Checkbox
-                        checked={tagFilter.includes(tag)}
-                        onCheckedChange={(checked) =>
-                          setTagFilter((prev) =>
-                            checked
-                              ? [...prev, tag]
-                              : prev.filter((item) => item !== tag)
-                          )
-                        }
-                      />
-                      <span className="text-white font-medium">{tag}</span>
-                    </label>
-                  ))}
-                </div>
-                <ScrollBar orientation="vertical" />
-              </ScrollArea>
-            </PopoverContent>
-          </Popover>
-
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="ghost" className="border border-dashed">
+              <CirclePlus className="w-4 h-4" />
+              Tags
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-2 bg-gray-900 border-gray-700 text-white overflow-hidden">
+            <ScrollArea className="h-60 w-full">
+              <div className="flex flex-col gap-2 p-2">
+                {uniqueTags.map((tag) => (
+                  <label key={tag} className="flex items-center gap-2 text-sm">
+                    <Checkbox
+                      checked={tagFilter.includes(tag)}
+                      onCheckedChange={(checked) =>
+                        setTagFilter((prev) =>
+                          checked
+                            ? [...prev, tag]
+                            : prev.filter((item) => item !== tag)
+                        )
+                      }
+                    />
+                    <span className="text-white font-medium">{tag}</span>
+                  </label>
+                ))}
+              </div>
+              <ScrollBar orientation="vertical" />
+            </ScrollArea>
+          </PopoverContent>
+        </Popover>
       </div>
 
       {/* COLLAPSIBLE CARDS */}
-      
       <ScrollArea className="flex-1 overflow-y-auto px-4 pr-6 pb-4">
-          {paginated.map((req) => (
-            <div key={req.id} className="rounded-2xl border dark:border-gray-700 mb-4 ml-2 mr-2">
-              <button
-                onClick={() => toggleExpand(req.stories[0]?.usid)}
-                className="w-full flex justify-between items-center pl-4 pr-4 px-6 py-3 rounded-2xl dark:bg-[#272727] bg-gray-300"
-              >
-                <div className="grid grid-cols-2 text-sm font-semibold gap-25 text-gray-700 dark:text-gray-400 mb-2">
-                  <div>User As a.. ({req.stories.length})</div>
-                  <div>Stories ({req.stories.length})</div>
+        {paginated.map((req) => (
+          <div key={req.id} className="rounded-2xl border dark:border-gray-700 mb-4 ml-2 mr-2">
+            <button
+              onClick={() => toggleExpand(req.stories[0]?.usid)}
+              className="w-full flex justify-between items-center pl-4 pr-4 px-6 py-3 rounded-2xl dark:bg-[#272727] bg-gray-300"
+            >
+              <div className="grid grid-cols-2 text-sm font-semibold gap-25 text-gray-700 dark:text-gray-400 mb-2">
+                <div>User As a.. ({req.stories.length})</div>
+                <div>Stories ({req.stories.length})</div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="text-sm text-gray-700 dark:text-gray-400">
+                  Story Id – <span className="text-black dark:text-white">{req.stories[0]?.usid}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-sm text-gray-700 dark:text-gray-400">
-                    Story Id – <span className="text-black dark:text-white">{req.stories[0]?.usid}</span>
-                  </div>
-                  <div className="text-sm text-gray-700 dark:text-gray-400">
-                    Req Id – <span className="text-black dark:text-white">{req.id}</span>
-                  </div>
-                  <ConfidenceBadge confidence={req.confidence} />
-                  {expandedReqs[req.stories[0]?.usid] ? (
-                    <ChevronUp className="w-4 h-4 text-gray-700 dark:text-gray-400" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-gray-700 dark:text-gray-400" />
-                  )}
+                <div className="text-sm text-gray-700 dark:text-gray-400">
+                  Req Id – <span className="text-black dark:text-white">{req.id}</span>
                 </div>
-              </button>
+                <ConfidenceBadge confidence={req.confidence} />
+                {expandedReqs[req.stories[0]?.usid] ? (
+                  <ChevronUp className="w-4 h-4 text-gray-700 dark:text-gray-400" />
+                ) : (
+                  <ChevronDown className="w-4 h-4 text-gray-700 dark:text-gray-400" />
+                )}
+              </div>
+            </button>
 
-              {expandedReqs[req.stories[0]?.usid] && (
-                <ScrollArea className="h-[70px] px-2 space-y-4 bg-white-700 dark:bg-[#1a1a1a] dark:text-white rounded-b-xl">
-                  {req.stories.map((story, idx) => (
-                    <div
-                      key={idx}
-                      className="flex items-center justify-between border-b border-gray-400 dark:border-gray-700 py-2 gap-4"
-                    >
-                      <div className="flex items-center text-black dark:text-white pl-4 gap-2 min-w-[180px]">
-                        <User2Icon className="w-4 h-4" />
-                        <span className="text-sm">{story.role}</span>
-                      </div>
-                      <div className="flex-1 text-sm text-black dark:text-white px-2">
-                        “ {story.story} ”
-                        <span>
-                          <Badge className="pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm bg-[#466ABA] text-white">
-                            {story.tshirt_size}
-                          </Badge>
-                        </span>
-                        <span>
-                          <Badge
-                            className={`pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm ${
-                              story?.priority === "High"
-                                ? "bg-[#6C4343] text-white"
-                                : story?.priority === "Medium"
-                                ? "bg-[#695A3A] text-white"
-                                : "bg-[#387189] text-white"
-                            }`}
-                          >
-                            {story?.priority}
-                          </Badge>
-                        </span>
-                      </div>
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button
-                            className="bg-black dark:bg-white text-white dark:text-black mr-2 h-8 px-3 text-xs rounded-t-md rounded-b-md whitespace-nowrap"
-                            onClick={() => setSelectedStory(story)}
-                          >
-                            <Eye />
-                            View
-                          </Button>
-                        </DialogTrigger>
+            {expandedReqs[req.stories[0]?.usid] && (
+              <ScrollArea className="h-[70px] px-2 space-y-4 bg-white-700 dark:bg-[#1a1a1a] dark:text-white rounded-b-xl">
+                {req.stories.map((story, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between border-b border-gray-400 dark:border-gray-700 py-2 gap-4"
+                  >
+                    <div className="flex items-center text-black dark:text-white pl-4 gap-2 min-w-[180px]">
+                      <User2Icon className="w-4 h-4" />
+                      <span className="text-sm">{story.role}</span>
+                    </div>
+                    <div className="flex-1 text-sm text-black dark:text-white px-2">
+                      " {story.story} "
+                      <span>
+                        <Badge className="pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm bg-[#466ABA] text-white">
+                          {story.tshirt_size}
+                        </Badge>
+                      </span>
+                      <span>
+                        <Badge
+                          className={`pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm ${
+                            story?.priority === "High"
+                              ? "bg-[#6C4343] text-white"
+                              : story?.priority === "Medium"
+                              ? "bg-[#695A3A] text-white"
+                              : "bg-[#387189] text-white"
+                          }`}
+                        >
+                          {story?.priority}
+                        </Badge>
+                      </span>
+                    </div>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button
+                          className="bg-black dark:bg-white text-white dark:text-black mr-2 h-8 px-3 text-xs rounded-t-md rounded-b-md whitespace-nowrap"
+                          onClick={() => setSelectedStory(story)}
+                        >
+                          <Eye />
+                          View
+                        </Button>
+                      </DialogTrigger>
 
-                        <DialogContent className="w-[1000px] h-[450px] bg-[#1a1a1a] text-white fixed top-[260px] left-1/2 -translate-x-1/2 p-4 rounded-xl shadow-lg">
-                          <DialogClose asChild>
-                            <button
-                              className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
-                              aria-label="Close"
-                            ></button>
-                          </DialogClose>
+                      <DialogContent className="w-[1000px] h-[450px] bg-[#1a1a1a] text-white fixed top-[260px] left-1/2 -translate-x-1/2 p-4 rounded-xl shadow-lg">
+                        <DialogClose asChild>
+                          <button
+                            className="absolute top-4 right-4 text-gray-400 hover:text-white transition-colors"
+                            aria-label="Close"
+                          ></button>
+                        </DialogClose>
 
-                          <DialogDescription className="text-base text-white max-h-[500px] overflow-y-auto pr-2">
-                            {selectedStory && (
-                              <>
-                                <DialogHeader>
-                                  <DialogTitle className="text-sm text-gray-400">
-                                    Req Id – {req.id} <ConfidenceBadge confidence={req.confidence} />
-                                  </DialogTitle>
-                                  <DialogDescription className="text-base text-white">
-                                    <div className="mb-2 flex items-center gap-2">
-                                      <span className="text-gray-400 font-semibold">User As A:</span>
-                                      <span
-                                        className={`min-w-[180px] ${
-                                          story.role === "Card Operator"
-                                            ? "text-green-600 dark:text-[#ABE2C9]"
-                                            : "text-blue-600 dark:text-[#5ABAD1]"
+                        <DialogDescription className="text-base text-white max-h-[500px] overflow-y-auto pr-2">
+                          {selectedStory && (
+                            <>
+                              {/* <DialogHeader>
+                                <DialogTitle className="text-sm text-gray-400">
+                                  Req Id – {req.id} <ConfidenceBadge confidence={req.confidence} />
+                                </DialogTitle>
+                                <DialogDescription className="text-base text-white">
+                                  <div className="mb-2 flex items-center gap-2">
+                                    <span className="text-gray-400 font-semibold">User As A:</span>
+                                    <span
+                                      className={`min-w-[180px] ${
+                                        story.role === "Card Operator"
+                                          ? "text-green-600 dark:text-[#ABE2C9]"
+                                          : "text-blue-600 dark:text-[#5ABAD1]"
+                                      }`}
+                                    >
+                                      {selectedStory.role}
+                                    </span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400 font-semibold">User Story ID:</span>
+                                    <span className="text-white ml-2">{selectedStory.usid}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400 font-semibold">Title:</span>
+                                    <span className="text-white ml-2">{selectedStory.title}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400 font-semibold">Description:</span>
+                                    <span className="text-white ml-2">{selectedStory.description}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400 font-semibold block mb-2">
+                                      Labels/Tags:
+                                    </span>
+                                    <div className="flex flex-wrap gap-2">
+                                      {selectedStory.tags.map((item, index) => (
+                                        <span
+                                          key={index}
+                                          className="bg-gray-700 text-white text-sm px-3 py-1 rounded-full border border-gray-600 hover:bg-gray-600 transition-colors"
+                                        >
+                                          {item}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400 font-semibold">
+                                      <br />
+                                      User Story:
+                                    </span>
+                                    <ul className="text-white">
+                                      {selectedStory.story}{" "}
+                                      <Badge className="pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm bg-[#466ABA] text-white">
+                                        {selectedStory.tshirt_size}
+                                      </Badge>
+                                      <Badge
+                                        className={`pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm ${
+                                          selectedStory?.priority === "High"
+                                            ? "bg-[#6C4343] text-white"
+                                            : selectedStory?.priority === "Medium"
+                                            ? "bg-[#695A3A] text-white"
+                                            : "bg-[#387189] text-white"
                                         }`}
                                       >
-                                        {selectedStory.role}
-                                      </span>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-400 font-semibold">User Story ID:</span>
-                                      <span className="text-white ml-2">{selectedStory.usid}</span>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-400 font-semibold">Title:</span>
-                                      <span className="text-white ml-2">{selectedStory.title}</span>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-400 font-semibold block mb-2">
-                                        Labels/Tags:
-                                      </span>
-                                      <div className="flex flex-wrap gap-2">
-                                        {selectedStory.tags.map((item, index) => (
-                                          <span
-                                            key={index}
-                                            className="bg-gray-700 text-white text-sm px-3 py-1 rounded-full border border-gray-600 hover:bg-gray-600 transition-colors"
-                                          >
-                                            {item}
-                                          </span>
-                                        ))}
-                                      </div>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-400 font-semibold">
-                                        <br />
-                                        User Story:
-                                      </span>
-                                      <ul className="text-white">
-                                        {selectedStory.story}{" "}
-                                        <Badge className="pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm bg-[#466ABA] text-white">
-                                          {selectedStory.tshirt_size}
-                                        </Badge>
-                                        <Badge
-                                          className={`pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm ${
-                                            selectedStory?.priority === "High"
-                                              ? "bg-[#6C4343] text-white"
-                                              : selectedStory?.priority === "Medium"
-                                              ? "bg-[#695A3A] text-white"
-                                              : "bg-[#387189] text-white"
-                                          }`}
-                                        >
-                                          {selectedStory?.priority}
-                                        </Badge>
-                                      </ul>
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-400 font-semibold">
-                                        <br />
-                                        Description:
-                                      </span>
-                                      <ul className="text-white">
-                                        {selectedStory.description}{" "}
-                                      </ul> 
-                                    </div>
-                                    <div>
-                                      <span className="text-gray-400 font-semibold">
-                                        <br />
-                                        Acceptance Criteria:
-                                      </span>
-                                      <ul className="list-disc pl-6 mt-2 space-y-1">
-                                        {selectedStory.acceptanceCriteria.map((item, index) => (
-                                          <li key={index} className="text-white">
-                                            {item}
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  </DialogDescription>
-                                </DialogHeader>
-
-                                <div className="fixed bottom-4 right-20 z-50">
-                                  <button
-                                    onClick={() => setShowEdit(true)}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition duration-200"
-                                    title="Edit story"
-                                  >
-                                    <Pencil className="w-5 h-5" />
-                                  </button>
-                                </div>
-
-                                <div className="fixed bottom-4 right-4 z-50">
-                                  <button
-                                    onClick={() => setShowFeedback(true)}
-                                    className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition duration-200"
-                                    title="Suggest improvements"
-                                  >
-                                    <Sparkles className="w-5 h-5" />
-                                  </button>
-                                </div>
-
-                                {/* Feedback Modal */}
-                                {showFeedback && (
-                                  <FeedbackModal
-                                    story={selectedStory}
-                                    onClose={() => setShowFeedback(false)}
-                                    onUpdate={(updatedResponse) => {
-                                      const updatedStory = updatedResponse.updated_story || selectedStory;
-                                      setSelectedStory(updatedStory);
-                                      setShowFeedback(false);
-
-                                      // Update local requirements state
-                                      const updatedRequirements = requirements.map((r) => ({
-                                        ...r,
-                                        stories: r.stories.map((s) =>
-                                          s.usid === selectedStory.usid ? { ...s, ...updatedStory } : s
-                                        ),
-                                      }));
-                                      setRequirements(updatedRequirements);
-
-                                      // Update fulluserstoriesdataPayload
-                                      // const updatedRequirement: Requirement = {
-                                      //   requirement_id: req.id,
-                                      //   user_story_id: updatedStory.usid,
-                                      //   title: updatedStory.title,
-                                      //   user_story: updatedStory.story,
-                                      //   acceptance_criteria: updatedStory.acceptanceCriteria,
-                                      //   confidence_score: updatedStory.confidence ?? req.confidence,
-                                      //   tshirt_size: updatedStory.tshirt_size,
-                                      //   priority: updatedStory.priority,
-                                      //   tags: updatedStory.tags,
-                                      // };
-                                      const updatedRequirement: Requirement = {
-                                        requirement_id: req.id,
-                                        user_story_id: updatedStory.usid ?? selectedStory.usid,
-                                        title: updatedStory.title ?? selectedStory.title,
-                                        user_story: updatedStory.story ?? selectedStory.story,
-                                        description: updatedStory.description ?? selectedStory.description,
-                                        acceptance_criteria: updatedStory.acceptanceCriteria ?? selectedStory.acceptanceCriteria,
-                                        confidence_score: updatedStory.confidence ?? req.confidence,
-                                        tshirt_size: updatedStory.tshirt_size ?? selectedStory.tshirt_size,
-                                        priority: updatedStory.priority ?? selectedStory.priority,
-                                        tags: updatedStory.tags ?? selectedStory.tags,
-                                      };
-
-                                      const updatedUserStories = fulluserstoriesdataPayload.user_stories.map((r) =>
-                                        r.requirement_id === req.id ? updatedRequirement : r
-                                      );
-                                      fulluserstoriesdataPayload.user_stories = updatedUserStories;
-
-                                      // Notify parent component of updated user stories
-                                      if (onUpdatedUserStoriesData) {
-                                        onUpdatedUserStoriesData(updatedUserStories);
-                                      }
-                                    }}
-                                  />
-                                )}
-
-                                {/* Edit Story Modal */}
-                                {showEdit && selectedStory && (
-                                  <EditStoryModal
-                                    story={selectedStory}
-                                    onClose={() => setShowEdit(false)}
-                                    onSave={(updatedStory) => {
-                                      setSelectedStory(updatedStory);
-                                      setShowEdit(false);
-
-                                      // Update local requirements state
-                                      const updatedRequirements = requirements.map((r) => ({
-                                        ...r,
-                                        stories: r.stories.map((s) =>
-                                          s.usid === selectedStory.usid ? { ...s, ...updatedStory } : s
-                                        ),
-                                      }));
-                                      setRequirements(updatedRequirements);
-
-                                      // Update fulluserstoriesdataPayload
-                                      const updatedRequirement: Requirement = {
-                                        requirement_id: req.id,
-                                        user_story_id: updatedStory.usid,
-                                        title: updatedStory.title,
-                                        user_story: updatedStory.story,
-                                        description: updatedStory.description,
-                                        acceptance_criteria: updatedStory.acceptanceCriteria,
-                                        confidence_score: updatedStory.confidence ?? req.confidence,
-                                        tshirt_size: updatedStory.tshirt_size,
-                                        priority: updatedStory.priority,
-                                        tags: updatedStory.tags,
-                                      };
-
-                                      const updatedUserStories = fulluserstoriesdataPayload.user_stories.map((r) =>
-                                        r.requirement_id === req.id ? updatedRequirement : r
-                                      );
-                                      fulluserstoriesdataPayload.user_stories = updatedUserStories;
-
-                                      // Notify parent component of updated user stories
-                                      if (onUpdatedUserStoriesData) {
-                                        onUpdatedUserStoriesData(updatedUserStories);
-                                      }
-                                    }}
-                                  />
-                                )}
-                              </>
-                            )}
-                          </DialogDescription>
-                        </DialogContent>
-                      </Dialog>
-                    </div>
-                  ))}
-                  <ScrollBar orientation="vertical" />
-                </ScrollArea>
-              )}
+                                        {selectedStory?.priority}
+                                      </Badge>
+                                    </ul>
+                                  </div>
+                                  <div>
+                                    <span className="text-gray-400 font-semibold">
+                                      <br />
+                                      Acceptance Criteria:
+                                    </span>
+                                    <ul className="list-disc pl-6 mt-2 space-y-1">
+                                      {selectedStory.acceptanceCriteria.map((item, index) => (
+                                        <li key={index} className="text-white">
+                                          {item}
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </DialogDescription>
+                              </DialogHeader> */}
+                               <DialogHeader>
+        <DialogTitle className="text-sm text-gray-400">
+          Req Id – {req.id} <ConfidenceBadge confidence={req.confidence} />
+        </DialogTitle>
+        <DialogDescription className="text-base text-white">
+          <div className="mb-2 flex items-center gap-2">
+            <span className="text-gray-400 font-semibold">User As A:</span>
+            <span
+              className={`min-w-[180px] ${
+                story.role === "Card Operator"
+                  ? "text-green-600 dark:text-[#ABE2C9]"
+                  : "text-blue-600 dark:text-[#5ABAD1]"
+              }`}
+            >
+              {selectedStory.role}
+            </span>
+          </div>
+          <div>
+            <span className="text-gray-400 font-semibold">User Story ID:</span>
+            <span className="text-white ml-2">{selectedStory.usid}</span>
+          </div>
+          <div>
+            <span className="text-gray-400 font-semibold">Title:</span>
+            <span className="text-white ml-2">{selectedStory.title}</span>
+          </div>
+          <div>
+            <span className="text-gray-400 font-semibold block mb-2">
+              Labels/Tags:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {selectedStory.tags.map((item, index) => (
+                <span
+                  key={index}
+                  className="bg-gray-700 text-white text-sm px-3 py-1 rounded-full border border-gray-600 hover:bg-gray-600 transition-colors"
+                >
+                  {item}
+                </span>
+              ))}
             </div>
-          ))}
-          <ScrollBar orientation="vertical" />
-        </ScrollArea>
+          </div>
 
-        {/* ... (existing JSX for pagination footer and action buttons) */}
-      </div>
+          {/* 🔽 User Story first, with badges */}
+          <div>
+            <span className="text-gray-400 font-semibold">
+              <br />
+              User Story:
+            </span>
+            <ul className="text-white">
+              {selectedStory.story}{" "}
+              <Badge className="pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm bg-[#466ABA] text-white">
+                {selectedStory.tshirt_size}
+              </Badge>
+              <Badge
+                className={`pb-0.5 pt-0.5 ml-2 text-sm font-normal rounded-sm ${
+                  selectedStory?.priority === "High"
+                    ? "bg-[#6C4343] text-white"
+                    : selectedStory?.priority === "Medium"
+                    ? "bg-[#695A3A] text-white"
+                    : "bg-[#387189] text-white"
+                }`}
+              >
+                {selectedStory?.priority}
+              </Badge>
+            </ul>
+          </div>
+
+          {/* 🔽 Description comes after story */}
+          <div className="mt-3">
+            <span className="text-gray-400 font-semibold">Description:</span>
+            <span className="text-white ml-2">{selectedStory.description}</span>
+          </div>
+
+          {/* 🔽 Then Acceptance Criteria */}
+          <div>
+            <span className="text-gray-400 font-semibold">
+              <br />
+              Acceptance Criteria:
+            </span>
+            <ul className="list-disc pl-6 mt-2 space-y-1">
+              {selectedStory.acceptanceCriteria.map((item, index) => (
+                <li key={index} className="text-white">
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </DialogDescription>
+      </DialogHeader>
+
+                              <div className="fixed bottom-4 right-20 z-50">
+                                <button
+                                  onClick={() => setShowEdit(true)}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg transition duration-200"
+                                  title="Edit story"
+                                >
+                                  <Pencil className="w-5 h-5" />
+                                </button>
+                              </div>
+
+                              <div className="fixed bottom-4 right-4 z-50">
+                                <button
+                                  onClick={() => setShowFeedback(true)}
+                                  className="bg-purple-600 hover:bg-purple-700 text-white p-3 rounded-full shadow-lg transition duration-200"
+                                  title="Suggest improvements"
+                                >
+                                  <Sparkles className="w-5 h-5" />
+                                </button>
+                              </div>
+
+                              {showFeedback && (
+                                <FeedbackModal
+                                  story={selectedStory}
+                                  onClose={() => setShowFeedback(false)}
+                                  onUpdate={(updatedResponse) => {
+                                    const updatedStory = updatedResponse.updated_story || selectedStory;
+                                    setSelectedStory(updatedStory);
+                                    setShowFeedback(false);
+
+                                    const updatedRequirements = requirements.map((r) => ({
+                                      ...r,
+                                      stories: r.stories.map((s) =>
+                                        s.usid === selectedStory.usid ? { ...s, ...updatedStory } : s
+                                      ),
+                                    }));
+                                    setRequirements(updatedRequirements);
+
+                                    const updatedRequirement = {
+                                      requirement_id: req.id,
+                                      user_story_id: updatedStory.usid ?? selectedStory.usid,
+                                      title: updatedStory.title ?? selectedStory.title,
+                                      user_story: updatedStory.story ?? selectedStory.story,
+                                      description: updatedStory.description ?? selectedStory.description,
+                                      acceptance_criteria: updatedStory.acceptanceCriteria ?? selectedStory.acceptanceCriteria,
+                                      confidence_score: updatedStory.confidence ?? req.confidence,
+                                      tshirt_size: updatedStory.tshirt_size ?? selectedStory.tshirt_size,
+                                      priority: updatedStory.priority ?? selectedStory.priority,
+                                      tags: updatedStory.tags ?? selectedStory.tags,
+                                    };
+
+                                    const updatedUserStories = fulluserstoriesdataPayload.user_stories.map((r) =>
+                                      r.requirement_id === req.id ? updatedRequirement : r
+                                    );
+                                    fulluserstoriesdataPayload.user_stories = updatedUserStories;
+
+                                    if (onUpdatedUserStoriesData) {
+                                      onUpdatedUserStoriesData(updatedUserStories);
+                                    }
+                                  }}
+                                />
+                              )}
+
+                              {showEdit && selectedStory && (
+                                <EditStoryModal
+                                  story={selectedStory}
+                                  onClose={() => setShowEdit(false)}
+                                  onSave={(updatedStory) => {
+                                    setSelectedStory(updatedStory);
+                                    setShowEdit(false);
+
+                                    const updatedRequirements = requirements.map((r) => ({
+                                      ...r,
+                                      stories: r.stories.map((s) =>
+                                        s.usid === selectedStory.usid ? { ...s, ...updatedStory } : s
+                                      ),
+                                    }));
+                                    setRequirements(updatedRequirements);
+
+                                    const updatedRequirement = {
+                                      requirement_id: req.id,
+                                      user_story_id: updatedStory.usid,
+                                      title: updatedStory.title,
+                                      user_story: updatedStory.story,
+                                      description: updatedStory.description,
+                                      acceptance_criteria: updatedStory.acceptanceCriteria,
+                                      confidence_score: updatedStory.confidence ?? req.confidence,
+                                      tshirt_size: updatedStory.tshirt_size,
+                                      priority: updatedStory.priority,
+                                      tags: updatedStory.tags,
+                                    };
+
+                                    const updatedUserStories = fulluserstoriesdataPayload.user_stories.map((r) =>
+                                      r.requirement_id === req.id ? updatedRequirement : r
+                                    );
+                                    fulluserstoriesdataPayload.user_stories = updatedUserStories;
+
+                                    if (onUpdatedUserStoriesData) {
+                                      onUpdatedUserStoriesData(updatedUserStories);
+                                    }
+                                  }}
+                                />
+                              )}
+                            </>
+                          )}
+                        </DialogDescription>
+                      </DialogContent>
+                    </Dialog>
+                  </div>
+                ))}
+                <ScrollBar orientation="vertical" />
+              </ScrollArea>
+            )}
+          </div>
+        ))}
+        <ScrollBar orientation="vertical" />
+      </ScrollArea>
 
       {/* Pagination Footer */}
       <div className="flex justify-end items-center h-9 border-b border-gray-700 text-sm bg-[#f6f6f6] dark:bg-black text-black dark:text-white">
@@ -1068,7 +1018,7 @@ const handlePost = async () => {
           </Button>
         </div>
       </div>
-
-    </>
-  );
+    </div>
+  </>
+);
 }
